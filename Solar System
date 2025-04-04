@@ -1,0 +1,58 @@
+# Predictive Maintenance in Solar Power Systems
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.preprocessing import StandardScaler
+
+# Load Dataset (Replace with actual dataset path)
+data = pd.read_csv('/content/solar_predictive_maintenance_dataset.csv')
+
+# Preview Dataset
+print("Data Head:\n", data.head())
+
+# Data Cleaning (Remove missing and duplicate values)
+data.dropna(inplace=True)
+data.drop_duplicates(inplace=True)
+
+# Feature and Label Selection
+features = ['temperature', 'voltage', 'current']
+label = 'status'  # status: healthy, degrading, failed
+
+X = data[features]
+y = data[label]
+
+# Feature Scaling
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=42)
+
+# Model Training - Random Forest
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Model Evaluation
+y_pred = model.predict(X_test)
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Precision:", precision_score(y_test, y_pred, average='weighted'))
+print("Recall:", recall_score(y_test, y_pred, average='weighted'))
+print("F1 Score:", f1_score(y_test, y_pred, average='weighted'))
+
+# Feature Importance
+importances = model.feature_importances_
+feature_names = features
+sns.barplot(x=importances, y=feature_names)
+plt.title("Feature Importance")
+plt.show()
+
+# Save model for demo (optional)
+import joblib
+joblib.dump(model, 'predictive_model.pkl')
